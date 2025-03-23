@@ -14,10 +14,13 @@ class BaseAPITest(APITestCase):
                                                      password='testpass')
         self.group = Group.objects.create(title='Group 1', slug='group-1',
                                           description='Test group')
-        self.post_without_group = Post.objects.create(text='Post without group',
+        self.post_without_group = Post.objects.create(text=
+                                                      'Post without group',
                                                       author=self.user)
-        self.post_with_group = Post.objects.create(text='Post with group',
-                                                   author=self.user, group=self.group)
+        self.post_with_group = Post.objects.create(text=
+                                                   'Post with group',
+                                                   author=self.user,
+                                                   group=self.group)
         self.comment = Comment.objects.create(text='Test comment',
                                               author=self.user,
                                               post=self.post_with_group)
