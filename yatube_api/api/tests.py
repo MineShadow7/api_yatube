@@ -1,19 +1,26 @@
 from http import HTTPStatus
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase, APIClient
 from posts.models import Post, Group, Comment
 
 User = get_user_model()
 
+
 class BaseAPITest(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='regular_user', password='testpass')
-        self.another_user = User.objects.create_user(username='another_user', password='testpass')
-        self.group = Group.objects.create(title='Group 1', slug='group-1', description='Test group')
-        self.post_without_group = Post.objects.create(text='Post without group', author=self.user)
-        self.post_with_group = Post.objects.create(text='Post with group', author=self.user, group=self.group)
-        self.comment = Comment.objects.create(text='Test comment', author=self.user, post=self.post_with_group)
+        self.user = User.objects.create_user(username='regular_user',
+                                             password='testpass')
+        self.another_user = User.objects.create_user(username='another_user',
+                                                     password='testpass')
+        self.group = Group.objects.create(title='Group 1', slug='group-1',
+                                          description='Test group')
+        self.post_without_group = Post.objects.create(text='Post without group',
+                                                      author=self.user)
+        self.post_with_group = Post.objects.create(text='Post with group',
+                                                   author=self.user, group=self.group)
+        self.comment = Comment.objects.create(text='Test comment',
+                                              author=self.user,
+                                              post=self.post_with_group)
         self.user_client = APIClient()
         self.user_client.force_authenticate(user=self.user)
         self.another_client = APIClient()
@@ -31,6 +38,7 @@ class BaseAPITest(APITestCase):
     def url_for_comment_detail(self, post_id, comment_id):
         return f'/api/v1/posts/{post_id}/comments/{comment_id}/'
 
+
 class PostAPITests(BaseAPITest):
     def test_posts_unauthenticated_get(self):
         client = APIClient()
@@ -44,7 +52,12 @@ class PostAPITests(BaseAPITest):
         self.assertIsInstance(posts, list)
         if posts:
             post = posts[0]
-            for field in ("id", "text", "author", "pub_date", "image", "group"):
+            for field in ("id",
+                          "text",
+                          "author",
+                          "pub_date",
+                          "image",
+                          "group"):
                 self.assertIn(field, post)
 
     def test_post_create_without_group(self):
@@ -66,7 +79,9 @@ class PostAPITests(BaseAPITest):
         url = self.url_for_post_detail(self.post_without_group.id)
         response = self.user_client.delete(url)
         self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
-        self.assertFalse(Post.objects.filter(id=self.post_without_group.id).exists())
+        self.assertFalse(
+            Post.objects.filter(id=self.post_without_group.id).exists())
+
 
 class CommentAPITests(BaseAPITest):
     def test_comments_unauthenticated_get(self):
@@ -86,14 +101,16 @@ class CommentAPITests(BaseAPITest):
         self.assertEqual(response_data.get("post"), self.post_with_group.id)
 
     def test_comment_update_not_author(self):
-        url = self.url_for_comment_detail(self.post_with_group.id, self.comment.id)
+        url = self.url_for_comment_detail(self.post_with_group.id,
+                                          self.comment.id)
         data = {"text": "Hacked comment text"}
         response = self.another_client.patch(url, data=data)
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
     def test_comment_delete_unauthenticated(self):
         client = APIClient()
-        url = self.url_for_comment_detail(self.post_with_group.id, self.comment.id)
+        url = self.url_for_comment_detail(self.post_with_group.id,
+                                          self.comment.id)
         response = client.delete(url)
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
         self.assertTrue(Comment.objects.filter(id=self.comment.id).exists())

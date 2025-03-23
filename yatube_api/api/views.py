@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -6,7 +5,6 @@ from posts.models import Post, Group, Comment
 from .serializers import PostSerializer, GroupSerializer, CommentSerializer
 from .permissions import IsAuthorOrReadOnly
 
-# Create your views here.
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -17,10 +15,12 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated]
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
