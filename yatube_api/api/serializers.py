@@ -1,4 +1,3 @@
-# filepath: /workspaces/api_yatube/api/serializers.py
 from rest_framework import serializers
 from posts.models import Post, Group, Comment
 
